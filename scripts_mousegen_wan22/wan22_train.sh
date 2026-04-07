@@ -1,4 +1,4 @@
-export MODEL_NAME="models/Diffusion_Transformer/Wan2.2-T2V-A14B"
+export MODEL_NAME="models/wan22/Wan2.2-TI2V-5B"
 export DATASET_NAME="datasets/internal_datasets/"
 export DATASET_META_NAME="datasets/internal_datasets/metadata.json"
 # NCCL_IB_DISABLE=1 and NCCL_P2P_DISABLE=1 are used in multi nodes without RDMA. 
@@ -7,26 +7,26 @@ export DATASET_META_NAME="datasets/internal_datasets/metadata.json"
 NCCL_DEBUG=INFO
 
 accelerate launch --mixed_precision="bf16" scripts_mousegen_wan22/wan22_train.py \
-  --config_path="config/wan2.2/wan_civitai_t2v.yaml" \
+  --config_path="config/wan2.2/wan_civitai_5b.yaml" \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir=$DATASET_NAME \
   --train_data_meta=$DATASET_META_NAME \
   --image_sample_size=640 \
   --video_sample_size=640 \
   --token_sample_size=640 \
-  --video_sample_stride=2 \
+  --video_sample_stride=1 \
   --video_sample_n_frames=81 \
   --train_batch_size=1 \
   --video_repeat=1 \
-  --gradient_accumulation_steps=1 \
+  --gradient_accumulation_steps=4 \
   --dataloader_num_workers=8 \
   --num_train_epochs=100 \
-  --checkpointing_steps=50 \
+  --checkpointing_steps=20 \
   --learning_rate=2e-05 \
   --lr_scheduler="constant_with_warmup" \
   --lr_warmup_steps=100 \
   --seed=42 \
-  --output_dir="output_dir_wan2.2" \
+  --output_dir="mousegen_wan22_5b" \
   --gradient_checkpointing \
   --mixed_precision="bf16" \
   --adam_weight_decay=3e-2 \
@@ -40,7 +40,8 @@ accelerate launch --mixed_precision="bf16" scripts_mousegen_wan22/wan22_train.py
   --low_vram \
   --boundary_type="low" \
   --train_mode="normal" \
-  --trainable_modules "."
+  --trainable_modules "." \
+  --validation_prompts "一只灰色小鼠在实验台上探索，自由地移动，背景是实验室环境，光线明亮，细节丰富，高清晰度" \
 
 # The Training Shell Code for Image to Video
 # You need to use "config/wan2.2/wan_civitai_i2v.yaml"
