@@ -1,3 +1,6 @@
+# Agent Workspace
+.CLAUDE/
+
 # Byte-compiled / optimized / DLL files
 models*
 output*
