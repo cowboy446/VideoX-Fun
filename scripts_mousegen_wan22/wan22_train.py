@@ -74,7 +74,7 @@ from videox_fun.data.dataset_image_video import (ImageVideoDataset,
                                                  get_random_mask)
 from videox_fun.models import (AutoencoderKLWan, AutoencoderKLWan3_8,
                                Wan2_2Transformer3DModel, WanT5EncoderModel)
-from videox_fun.pipeline import Wan2_2I2VPipeline, Wan2_2Pipeline
+from videox_fun.pipeline import Wan2_2I2VPipeline, Wan2_2Pipeline, Wan2_2TI2VPipeline
 from videox_fun.utils.discrete_sampler import DiscreteSampling
 from videox_fun.utils.utils import (calculate_dimensions, get_image_latent,
                                     get_image_to_video_latent,
@@ -196,9 +196,17 @@ def log_validation(vae, text_encoder, tokenizer, transformer3d, args, config, ac
 
                     transformer3d_2 = accelerator.unwrap_model(transformer3d) if type(transformer3d).__name__ == 'DistributedDataParallel' else transformer3d
             
-            if args.train_mode != "normal":
+            if args.train_mode == "ti2v":
+                pipeline = Wan2_2TI2VPipeline(
+                    vae=vae,
+                    text_encoder=text_encoder,
+                    tokenizer=tokenizer,
+                    transformer=transformer3d_1,
+                    scheduler=scheduler,
+                )
+            elif args.train_mode != "normal":
                 pipeline = Wan2_2I2VPipeline(
-                    vae=vae, 
+                    vae=vae,
                     text_encoder=text_encoder,
                     tokenizer=tokenizer,
                     transformer=transformer3d_1,
@@ -207,7 +215,7 @@ def log_validation(vae, text_encoder, tokenizer, transformer3d, args, config, ac
                 )
             else:
                 pipeline = Wan2_2Pipeline(
-                    vae=vae, 
+                    vae=vae,
                     text_encoder=text_encoder,
                     tokenizer=tokenizer,
                     transformer=transformer3d_1,
