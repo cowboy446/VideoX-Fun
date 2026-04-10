@@ -4,6 +4,8 @@
 # Byte-compiled / optimized / DLL files
 models*
 output*
+mouse*
+wandb/
 logs*
 taming*
 samples*
