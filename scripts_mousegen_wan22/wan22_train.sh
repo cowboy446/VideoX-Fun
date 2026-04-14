@@ -8,7 +8,16 @@ export WAN22_ACCELERATE="/home/zhangrong/miniconda3/envs/wan22/bin/accelerate"
 # export NCCL_P2P_DISABLE=1
 NCCL_DEBUG=INFO
 
-"$WAN22_ACCELERATE" launch --mixed_precision="bf16" scripts_mousegen_wan22/wan22_train.py \
+"$WAN22_ACCELERATE" launch \
+  --mixed_precision="bf16" \
+  --use_fsdp \
+  --fsdp_auto_wrap_policy TRANSFORMER_BASED_WRAP \
+  --fsdp_transformer_layer_cls_to_wrap=WanAttentionBlock \
+  --fsdp_sharding_strategy "FULL_SHARD" \
+  --fsdp_state_dict_type=SHARDED_STATE_DICT \
+  --fsdp_backward_prefetch "BACKWARD_PRE" \
+  --fsdp_cpu_ram_efficient_loading False \
+  scripts_mousegen_wan22/wan22_train.py \
   --config_path="config/wan2.2/wan_civitai_5b.yaml" \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir=$DATASET_NAME \
@@ -23,12 +32,12 @@ NCCL_DEBUG=INFO
   --gradient_accumulation_steps=4 \
   --dataloader_num_workers=8 \
   --num_train_epochs=100 \
-  --checkpointing_steps=3000 \
+  --checkpointing_steps=300 \
   --learning_rate=2e-05 \
   --lr_scheduler="constant_with_warmup" \
   --lr_warmup_steps=100 \
   --seed=42 \
-  --output_dir="mousegen_wan22_5b" \
+  --output_dir="mousegen_wan22_5b_fsdp" \
   --gradient_checkpointing \
   --mixed_precision="bf16" \
   --adam_weight_decay=3e-2 \
@@ -43,7 +52,7 @@ NCCL_DEBUG=INFO
   --boundary_type="full" \
   --train_mode="ti2v" \
   --trainable_modules "." \
-  --validation_steps=300 \
+  --validation_steps=100 \
   --validation_prompts \
     "一只黑色小鼠在实验台上探索，自由地移动，背景是实验室环境，光线明亮，细节丰富，高清晰度" \
     "一只黑色小鼠在野外草地环境下爬行，画面生动，高清晰度" \
